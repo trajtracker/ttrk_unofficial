@@ -1,4 +1,4 @@
-#*******************************************************************************************
+###############################################################################################
 #
 # Calibration script for running TrajTracker in a window that occupies only part of the screen.
 #
@@ -6,7 +6,7 @@
 # a touchpad that you put on top of the screen). The script's output is the python commands
 # that you can use to setup the window size.
 #
-#*******************************************************************************************
+###############################################################################################
 
 
 #===========================================================================================
@@ -29,8 +29,6 @@ howmanyrectangles = 3
 #===========================================================================================
 #              Prepare stimuli
 #===========================================================================================
-
-exp = xpy.control.initialize()
 
 
 def create_stimuli():
@@ -70,9 +68,6 @@ def create_stimuli():
     return stim_container, stim_list, response_square
 
 
-stim_container, stimulus_list, resp_square = create_stimuli()
-
-
 #===========================================================================================
 #              Functions
 #===========================================================================================
@@ -93,13 +88,14 @@ def wait_until_shape_clicked(exp, stim_ls, resp_square):
                     return i
             if resp_square.overlapping_with_position(exp.mouse.position):
                 return -1
-        
+
+
 #----------------------------------------------------------------
 # Drag_until_unclicked enables the user to move the shapes around until the
 # mouse button is released. 'exp' are all expyriment elements such as the mouse,
 # 'canv' is the shape that was clicked and is the one to be dragged.
 #
-def drag_until_unclicked(exp, canv):
+def drag_until_unclicked(exp, stim_container, canv):
 
     while exp.mouse.check_button_pressed(0):
         canv.position = exp.mouse.position
@@ -129,22 +125,30 @@ def save_results(stim_ls):
 #              Run the calibration
 #===========================================================================================
 
-#-- Initialize Expyriment
-xpy.control.start(exp)
-if not xpy.misc.is_android_running():
-    exp.mouse.show_cursor()
+def main():
 
-#-- Infinite while loop to present stimulus at every frame        
-while True:    
-    stim_container.present()
-    stim_number = wait_until_shape_clicked(exp, stimulus_list, resp_square)
-    if stim_number>=0:
-        drag_until_unclicked(exp, stimulus_list[stim_number])
-    else:
-        save_results(stimulus_list)
-        break
-            
-        
-xpy.io.Keyboard.process_control_keys()
+    exp = xpy.control.initialize()
 
-xpy.control.end()
+    #-- Initialize Expyriment
+    xpy.control.start(exp)
+    if not xpy.misc.is_android_running():
+        exp.mouse.show_cursor()
+
+    stim_container, stimulus_list, resp_square = create_stimuli()
+
+    #-- Infinite while loop to present stimulus at every frame
+    while True:
+        stim_container.present()
+        stim_number = wait_until_shape_clicked(exp, stimulus_list, resp_square)
+        if stim_number >= 0:
+            drag_until_unclicked(exp, stim_container, stimulus_list[stim_number])
+        else:
+            save_results(stimulus_list)
+            break
+
+    xpy.io.Keyboard.process_control_keys()
+
+    xpy.control.end()
+
+
+main()
